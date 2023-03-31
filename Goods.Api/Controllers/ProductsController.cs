@@ -1,6 +1,7 @@
 using Goods.Api.Extensions;
 using Goods.Api.ViewObjects;
 using Goods.BusinessLogic.Interface;
+using Goods.Models.Entities;
 using Goods.Models.Filters;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +31,14 @@ public class ProductsController : ControllerBase
     {
         var result = await _productsService.GetProduct(id, cancellationToken);
 
-        return Ok(result?.ToViewObject());
+        var viewObject = result?.ToViewObject();
+
+        if (viewObject is not null)
+        {
+            viewObject.Photo = await _productsService.GetPhoto(result!.Photo, cancellationToken);
+        }
+
+        return Ok(viewObject);
     }
 
     /// <summary>
@@ -42,9 +50,19 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken cancellationToken, [FromQuery] ProductFilter? productFilter = null)
     {
-        var result = await _productsService.GetProducts(productFilter, cancellationToken);
+        var products = (await _productsService.GetProducts(productFilter, cancellationToken)).ToList();
+        var result = new List<ProductViewObject>(products.Count);
 
-        return Ok(result.ToProductViewObjects());
+        foreach (var product in products)
+        {
+            var productViewObject = product.ToViewObject();
+
+            productViewObject.Photo = await _productsService.GetPhoto(product.Photo, cancellationToken);
+
+            result.Add(productViewObject);
+        }
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -56,13 +74,21 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post(ProductViewObject productViewObject, CancellationToken cancellationToken)
     {
+        if (productViewObject.Photo.Length == 0)
+        {
+            return BadRequest("No image uploaded");
+        }
+
         var dbEntity = productViewObject.ToDbEntity();
-        
+
         if (!await _productsService.CheckAdditionalFields(dbEntity, cancellationToken))
         {
-            return BadRequest();
+            return BadRequest("The additional fields from the group did not match with the fields from the product.");
         }
+        var fileName = await _productsService.SavePhoto(productViewObject.Photo, cancellationToken);
+
         dbEntity.Id = 0;
+        dbEntity.Photo = fileName;
 
         var category = await _productsService.AddProduct(dbEntity, cancellationToken);
         var result = category.ToViewObject();

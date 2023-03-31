@@ -23,7 +23,7 @@ public class ProductViewObject
     /// <summary>
     /// Gets or sets the photo of the product.
     /// </summary>
-    public string Photo { get; set; }
+    public IFormFile Photo { get; set; }
 
     /// <summary>
     /// Gets or sets the description of the product.

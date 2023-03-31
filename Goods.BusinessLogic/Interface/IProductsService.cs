@@ -1,5 +1,6 @@
 using Goods.Models.Entities;
 using Goods.Models.Filters;
+using Microsoft.AspNetCore.Http;
 
 namespace Goods.BusinessLogic.Interface;
 
@@ -39,4 +40,20 @@ public interface IProductsService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if the product has valid additional fields, false otherwise.</returns>
     Task<bool> CheckAdditionalFields(Product product, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Saves the uploaded photo to the temporary folder and returns the generated name.
+    /// </summary>
+    /// <param name="file">The uploaded photo file.</param>
+    /// /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The generated name of the saved photo.</returns>
+    Task<string> SavePhoto(IFormFile file, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves a photo with the specified name and returns it as a string.
+    /// </summary>
+    /// <param name="name">The name of the photo to retrieve.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>Return the IFormFile object representing the retrieved file.</returns>
+    Task<IFormFile> GetPhoto(string name, CancellationToken cancellationToken);
 }

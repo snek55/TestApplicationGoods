@@ -3,6 +3,7 @@ using Goods.DbContext;
 using Goods.DbContext.Extensions;
 using Goods.Models.Entities;
 using Goods.Models.Filters;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Goods.BusinessLogic.Services;
@@ -65,5 +66,37 @@ public class ProductsService : IProductsService
         }
 
         return false;
+    }
+
+    /// <inheritdoc />
+    public async Task<string> SavePhoto(IFormFile file, CancellationToken cancellationToken)
+    {
+        var newName = new Guid().ToString();
+        var filePath = Path.Combine(Path.GetTempPath(), newName);
+        
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream, cancellationToken);
+
+        return newName;
+    }
+
+    /// <inheritdoc />
+    public async Task<IFormFile> GetPhoto(string name, CancellationToken cancellationToken)
+    {
+        var fileInfo = new FileInfo(name);
+        
+        var formFile = new FormFile(
+            baseStream: new MemoryStream(await File.ReadAllBytesAsync(name, cancellationToken)),
+            baseStreamOffset: 0,
+            length: fileInfo.Length,
+            name: "file",
+            fileName: fileInfo.Name
+        )
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "application/octet-stream"
+        };
+
+        return formFile;
     }
 }

@@ -20,7 +20,6 @@ public static class ProductExtensions
             Id = categoryViewObject.Id,
             Name = categoryViewObject.Name,
             CategoryId = categoryViewObject.CategoryId,
-            Photo = categoryViewObject.Photo,
             Description = categoryViewObject.Description,
             Price = categoryViewObject.Price,
             CustomFields = categoryViewObject.CustomFields
@@ -39,7 +38,6 @@ public static class ProductExtensions
             Id = category.Id,
             Name = category.Name,
             CategoryId = category.CategoryId,
-            Photo = category.Photo,
             Description = category.Description,
             Price = category.Price,
             CustomFields = category.CustomFields
